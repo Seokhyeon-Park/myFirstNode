@@ -129,12 +129,22 @@ http.createServer(async (req, res) => {
           return res.end('ok');
         });
       }
-    } else if (req.method === 'DELETE') {
+    }
+    /**
+     * DELETE 요청을 받는 경우
+     * DELETE : HTTP DELETE요청 메서드 는 지정된 리소스를 삭제함.
+     * 'user'가 'key'인 대상을 제거
+     */
+    else if (req.method === 'DELETE') {
+      // request의 url 시작이 '/user/' 로 시작하는 경우
       if (req.url.startsWith('/user/')) {
+        // split 후 2번(3번째) 배열 요소 (key 값)
         const key = req.url.split('/')[2];
+        // 제거
         delete users[key];
+        // Okay response
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('ok');
+        return res.end('ok');ㅈ
       }
     }
     // ** 3장 추가 내용 2 : 끝 **

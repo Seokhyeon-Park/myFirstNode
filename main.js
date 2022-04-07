@@ -57,17 +57,24 @@ async function getUser() { // 로딩 시 사용자 가져오는 함수
          */
         remove.addEventListener('click', async () => { // 삭제 버튼 클릭
             try {
-                // 
+                /**
+                 * [ DELETE 요청 ]
+                 * /user/key 로 삭제 요청
+                 */
                 await axios.delete('/user/' + key);
                 getUser();
             } catch (err) {
                 console.error(err);
             }
         });
+        
+        // 준비한 요소 추가
         userDiv.appendChild(span);
         userDiv.appendChild(edit);
         userDiv.appendChild(remove);
         list.appendChild(userDiv);
+        
+        // 출력
         console.log(res.data);
       });
     } catch (err) {
