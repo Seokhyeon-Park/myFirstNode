@@ -144,7 +144,7 @@ http.createServer(async (req, res) => {
         delete users[key];
         // Okay response
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-        return res.end('ok');ㅈ
+        return res.end('ok');
       }
     }
     // ** 3장 추가 내용 2 : 끝 **
