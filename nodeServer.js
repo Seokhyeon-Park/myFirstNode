@@ -2,6 +2,7 @@ const http = require('http');       // http 불러오기
 const fs = require('fs').promises;  // file system 불러오기, 비동기 사용
 
 const users = {}; // 데이터 저장용
+const comments = {};
 
 // http module : http 서버를 쉽게 만들 수 있게 지원해줌.
 // req(request) : 클라이언트로 부터 받은 요청 (서버가 수신)
@@ -47,6 +48,11 @@ http.createServer(async (req, res) => {
         // JSON.stringify() 메서드는 JavaScript 값이나 객체를 JSON 문자열로 변환한다.
         // users 를 JSON 형식으로 return
         return res.end(JSON.stringify(users));
+      }
+      else if (req.url === '/comment') {
+        res.writeHead(200, { 'Content-Type' : 'application/json; charset = utf-8' });
+        console.log("GET ('/comment') 요청 확인 : ", JSON.stringify(comments));
+        return res.end(JSON.stringify(comments));
       }
       // ** 3장 추가 내용 1 : 끝 **
       // ************************
@@ -100,6 +106,21 @@ http.createServer(async (req, res) => {
           res.end('ok');
         });
       }
+      else if (req.url === '/comment/update'){
+        let body = '';
+        req.on('data', (data) => {
+          body += data;
+        });
+        
+        return req.on('end', () => {
+          const { comment } = JSON.parse(body);
+          console.log("Comment ?? : ", comment);
+          const key = Date.now();
+          comments[key] = comment;
+          res.writeHead(201, { 'Content-Type' : 'text/plain; charset=utf-8' });
+          res.end('ok');
+        });
+      }
     }
     /**
      * PUT 요청을 받는 경우
@@ -129,6 +150,19 @@ http.createServer(async (req, res) => {
           return res.end('ok');
         });
       }
+      else if (req.url.startsWith('/comment/')) {
+        const key = req.url.split('/')[2];
+        console.log("editer ?? : ", key);
+        let body = '';
+        req.on('data', (data) => {
+          body += data;
+        });
+        return req.on('end', () => {
+          comments[key] = JSON.parse(body).comment;
+          res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+          return res.end('ok');
+        });
+      }
     }
     /**
      * DELETE 요청을 받는 경우
@@ -144,6 +178,12 @@ http.createServer(async (req, res) => {
         delete users[key];
         // Okay response
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end('ok');
+      }
+      else if (req.url.startsWith('/comment/')) {
+        const key = req.url.split('/')[2];
+        delete comments[key];
+        res.writeHead(200, { 'Content-Type' : 'text/plain; charset=utf-8' });
         return res.end('ok');
       }
     }

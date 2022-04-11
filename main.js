@@ -45,47 +45,100 @@ async function getUser() { // 로딩 시 사용자 가져오는 함수
                 } catch (err) {
                     console.error(err); // 에러 발생
                 }
+            });
+        
+            // 버튼 생성
+            const remove = document.createElement('button');
+            remove.textContent = '삭제';    // 버튼 텍스트 지정
+            /**
+             * [ 삭제 button 이벤트 등록 ]
+             * DELETE(삭제) 이벤트 등록
+             * remove(삭제 button)을 누르는 경우...
+             */
+            remove.addEventListener('click', async () => { // 삭제 버튼 클릭
+                try {
+                    /**
+                     * [ DELETE 요청 ]
+                     * /user/key 로 삭제 요청
+                     */
+                    await axios.delete('/user/' + key);
+                    getUser();
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+        
+            // 준비한 요소 추가
+            userDiv.appendChild(span);
+            userDiv.appendChild(edit);
+            userDiv.appendChild(remove);
+            list.appendChild(userDiv);
+            
+            // 출력
+            console.log(res.data);
         });
-        
-        // 버튼 생성
-        const remove = document.createElement('button');
-        remove.textContent = '삭제';    // 버튼 텍스트 지정
-        /**
-         * [ 삭제 button 이벤트 등록 ]
-         * DELETE(삭제) 이벤트 등록
-         * remove(삭제 button)을 누르는 경우...
-         */
-        remove.addEventListener('click', async () => { // 삭제 버튼 클릭
-            try {
-                /**
-                 * [ DELETE 요청 ]
-                 * /user/key 로 삭제 요청
-                 */
-                await axios.delete('/user/' + key);
-                getUser();
-            } catch (err) {
-                console.error(err);
-            }
-        });
-        
-        // 준비한 요소 추가
-        userDiv.appendChild(span);
-        userDiv.appendChild(edit);
-        userDiv.appendChild(remove);
-        list.appendChild(userDiv);
-        
-        // 출력
-        console.log(res.data);
-      });
     } catch (err) {
         console.error(err);
     }
 }
+
+async function getComment(){
+    try {
+        const res = await axios.get('/comment');
+        const comments = res.data;
+        const list = document.getElementById('commentList');
+        list.innerHTML = '';
+
+        Object.keys(comments).map(function (key) {
+            console.log("key : ", key, "value : ", comments[key]);
+            const commentsDiv = document.createElement('div');
+            const span = document.createElement('span');
+            span.textContent = comments[key];
+            const edit = document.createElement('button');
+            edit.textContent = '수정';
+            edit.addEventListener('click', async () => {
+                const comment = prompt('수정할 내용을 입력하세요.');
+                if(!comment) {
+                    return alert('수정할 내용을 입력하세요.');
+                }
+                try {
+                    await axios.put('/comment/' + key, { comment });
+                    getComment();
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+
+            const remove = document.createElement('button');
+            remove.textContent = '삭제';    // 버튼 텍스트 지정
+            remove.addEventListener('click', async () => { // 삭제 버튼 클릭
+                try {
+                    await axios.delete('/comment/' + key);
+                    getComment();
+                } catch (err) {
+                    console.error(err);
+                }
+            });
+        
+            // 준비한 요소 추가
+            commentsDiv.appendChild(span);
+            commentsDiv.appendChild(edit);
+            commentsDiv.appendChild(remove);
+            list.appendChild(commentsDiv);
+            
+            // 출력
+            console.log(res.data);
+        });
+    } catch(err) {
+
+    }
+}
   
 window.onload = getUser; // 화면 로딩 시 getUser 호출
+window.onload = getComment; // 화면 로딩 시 getComment 호출
 
 /**
- * [등록 버튼 : id = "registUser"]
+ * [등록 : id = "registUser"]
  * 폼 제출(submit) 시 실행
  */
 document.getElementById('registUser').addEventListener('submit', async (e) => {
@@ -115,4 +168,30 @@ document.getElementById('registUser').addEventListener('submit', async (e) => {
         console.error(err);
     }
     e.target.username.value = '';
+});
+
+/**
+ * [등록 : id = "registComment"]
+ * 폼 제출(submit) 시 실행 
+ */
+document.getElementById('registComment').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // input box에 입력된 값 가져오기
+    const comment = e.target.userComment.value;
+    // comment가 없는 경우
+    if(!comment) {
+        return alert("Comment를 입력해주세요.");
+    }
+
+    try {
+        /**
+         * [POST 요청]
+         */
+         await axios.post('/comment/update', {comment});
+         // getUser 실행
+         getComment();
+    } catch(err) {
+        console.error(err);
+    }
+    e.target.userComment.value = '';
 });
