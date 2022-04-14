@@ -3,18 +3,33 @@ const fs = require('fs').promises;
 const url = require('url');
 const qs = require('querystring');
 
+/**
+ * reduce : { } (object 형식으로 담음)
+ * '=' 로 split, key : value 로 object화 return
+ * ex) myCookie=seokbong -> { myCookie: 'seokbong' }
+ * decodeURIComponent : Uniform Resource Identifier(URI) 컴포넌트를 Decoding
+ * @param {*} cookie 
+ * @returns 
+ */
 const parseCookies = (cookie = '') =>
   cookie
     .split(';')
     .map(v => v.split('='))
-    .reduce((acc, [k, v]) => {
-      acc[k.trim()] = decodeURIComponent(v);
-      return acc;
+    .reduce((acc, [key, value]) => {
+        acc[key.trim()] = decodeURIComponent(value);
+        return acc;
     }, {});
 
 http.createServer( async (req, res) => {
     const cookies = parseCookies(req.headers.cookie);
-    console.log("cookies : ", cookies);
+    /**
+     * req.headers.cookie :  myCookie=seokbong
+     * req.headers.cookie Type :  string
+     * parseCookies :  { myCookie: 'seokbong' }
+     */
+    console.log("req.headers.cookie : ", req.headers.cookie);
+    console.log("req.headers.cookie Type : ", typeof(req.headers.cookie));
+    console.log("parseCookies : ", cookies);
     console.log("req.url : ", req.url);
 
     /**
