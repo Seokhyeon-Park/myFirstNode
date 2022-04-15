@@ -28,28 +28,33 @@ http.createServer( async (req, res) => {
         const { query } = url.parse(req.url);
         const { name } = qs.parse(query);
         const expires = new Date();
-        /**
-         * 쿠키 유효 시간을 현재시간 + 5분으로 설정
-         * 쿠키 만료시간만 잘 세팅해 주어도 브라우저가 알아서 세션 이후 쿠키를 보내지 않음.
-         */
         expires.setMinutes(expires.getMinutes() + 5);
-        /**
-         * 302 (redirection) : 이 주소로 다시 돌려보내라. (to Location, 로그인 됐으니까...?)
-         * encodeURIComponent << 한글로 보내면 쿠키가 이상한 글자로 인식함.
-         * Expires 설정 : 쿠키에 만료기간을 설정하지 않는 경우, 세션 쿠키가 되어버린다. (브라우저를 닫을 떄까지...)
-         *      (Expires 대신 Max-age로 시간을 지정해 줄 수 있다.)
-         * HttpOnly : js에서 쿠키를 건들지 못하게 설정 (특히 보안을 위해)
-         * Path : 지정한 path (여기서는 '/') 내에서는 쿠키가 유효함을 나타냄
-         * 위 옵션들은 개발자 도구에 [Application] 탭에서 확인이 가능하다.
-         */
+        
+        // ** 추가 **
+        const uniqueInt = Date.now();
+        session[uniqueInt] = {
+            name,
+            expires
+        };
+        // *********
+
+        // 쿠키 : session = uniqueInt
         res.writeHead(302, {
         Location: '/',
-        'Set-Cookie': `name=${encodeURIComponent(name)}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
+        'Set-Cookie': `session = ${uniqueInt}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
         });
         res.end();
-    } else if (cookies.name) {
+    } 
+    /**
+     * ** 추가(수정) **
+     * cookies의 session이 존재하고, session[cookies.session(uniqueInt)]가 (세션 종료 시간이..) 지금 시간보다 큰 경우.
+     * 사실 브라우저가 세션 체크를 하기 떄문에
+            session[cookies.session].expires > new Date() << 이중 체크라고 생각하면 된다.
+     */
+    else if (cookies.session && session[cookies.session].expires > new Date()) {
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end(`${cookies.name}님 안녕하세요`);
+        // ** 추가(수정) **
+        res.end(`${session[cookies.session].name}님 안녕하세요`);
     } else {
         try {
             const data = await fs.readFile('./cookie2.html');

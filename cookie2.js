@@ -21,19 +21,17 @@ const parseCookies = (cookie = '') =>
     }, {});
 
 http.createServer( async (req, res) => {
-    const cookies = parseCookies(req.headers.cookie);
     /**
+     * req의 header 내부 cookie 가져와서 전처리.
      * req.headers.cookie :  myCookie=seokbong
      * req.headers.cookie Type :  string
      * parseCookies :  { myCookie: 'seokbong' }
      */
-    console.log("req.headers.cookie : ", req.headers.cookie);
-    console.log("req.headers.cookie Type : ", typeof(req.headers.cookie));
-    console.log("parseCookies : ", cookies);
-    console.log("req.url : ", req.url);
-
-    /**
+    const cookies = parseCookies(req.headers.cookie);
+    /*
+     * 만약 url이 /login으로 시작하는 경우.
      * GET 요청 뒤는 Querystring
+     * cookie2.html : <form action="/login"> ...
      * ex) www.url.com/login?name=asdf...
      */
     if(req.url.startsWith('/login')) {
@@ -44,14 +42,21 @@ http.createServer( async (req, res) => {
         console.log("query : ", query);
         console.log("name : ", name);
         console.log("expires : ", expires);
+
+        // const newQuery = new URL(req.url, `http://${req.headers.host}/`);
+        // const newName = newQuery.search.split('?')[1].split('=')[1];
+        // console.log("newQuery : ", newQuery);
+        // console.log("newName : ", newName);
+
         /**
          * 쿠키 유효 시간을 현재시간 + 5분으로 설정
          * 쿠키 만료시간만 잘 세팅해 주어도 브라우저가 알아서 세션 이후 쿠키를 보내지 않음.
          */
         expires.setMinutes(expires.getMinutes() + 5);
+
         /**
          * 302 (redirection) : 이 주소로 다시 돌려보내라. (to Location, 로그인 됐으니까...?)
-         * encodeURIComponent << 한글로 보내면 쿠키가 이상한 글자로 인식함.
+         * encodeURIComponent : 한글로 보내면 쿠키가 이상한 글자로 인식함. (인코딩...)
          * Expires 설정 : 쿠키에 만료기간을 설정하지 않는 경우, 세션 쿠키가 되어버린다. (브라우저를 닫을 떄까지...)
          *      (Expires 대신 Max-age로 시간을 지정해 줄 수 있다.)
          * HttpOnly : js에서 쿠키를 건들지 못하게 설정 (특히 보안을 위해)
@@ -63,10 +68,16 @@ http.createServer( async (req, res) => {
         'Set-Cookie': `name=${encodeURIComponent(name)}; Expires=${expires.toGMTString()}; HttpOnly; Path=/`,
         });
         res.end();
-    } else if (cookies.name) {
+    }
+    // 쿠키가 있는 경우.
+    else if (cookies.name) {
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end(`${cookies.name}님 안녕하세요`);
     } else {
+        /**
+         * 그 외.
+         * cookie2.html 불러오기.
+         */
         try {
             const data = await fs.readFile('./cookie2.html');
             res.writeHead(200, { 'Context-Type' : 'text/html; charset=utf-8' });
