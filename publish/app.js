@@ -7,7 +7,7 @@ const app = express();
 app.set('port', process.env.PORT || 3000);
 
 /**
- * [ Middleware ]
+ * [ Middleware ] : use << 미들웨어
  * 모든 코드에서 실행되는 부분
  * (*중요) next를 사용하지 않으면 미들웨어 아래 부분으로 더이상 넘어가지 않는다.
  */
@@ -17,7 +17,7 @@ app.use((req, res, next) => {
 });
 
 /**
- * [ html 서빙하기 ]
+ * [ html 서빙하기 ] : 라우터, 단 (req, res) 함수는 미들웨어
  * get ('/') 요청을 받는 경우,
  * 현재 directory에 있는 'index.html' 파일을 전송.
  */
@@ -31,6 +31,13 @@ app.post('/', (req, res) => {
 
 app.get('/about', (req, res) => {
     res.send('about!!');
+});
+
+// route parameter (:변수명), 와일드카드(:)
+// 와일드카드는 맨 아래에 써야함. (여기서 걸려버릴 수 있어서...)
+// 이 아래에 미들웨어는 안쓰는게 좋다.
+app.get('/category/:name', (req, res) => {
+    res.send(`${req.params.name}`);
 });
 
 app.listen(3000, () => {
