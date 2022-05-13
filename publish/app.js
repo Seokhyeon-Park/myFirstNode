@@ -14,7 +14,27 @@ app.set('port', process.env.PORT || 3000);
 app.use((req, res, next) => {
     console.log("공통 코드를 모아두자...");
     next();
+}, (req, res, next) => {
+    throw new Error("에러가 났어요!");
 });
+
+// 다음과 같이 조건을 줄 수 있다. : about에서만 사용하는 미들웨어.
+// app.use('/about', (req, res, next) => {
+//     console.log("공통 코드를 모아두자...");
+//     next();
+// });
+
+// 다음과 같이 미들웨어를 여러번 거칠 수 있음
+// app.use((req, res, next) => {
+//     console.log("공통 코드를 모아두자...1");
+//     next();
+// }, (req, res, next) => {
+//     console.log("공통 코드를 모아두자...2");
+//     next();
+// }, (req, res, next) => {
+//     console.log("공통 코드를 모아두자...3");
+//     next();
+// });
 
 /**
  * [ html 서빙하기 ] : 라우터, 단 (req, res) 함수는 미들웨어
